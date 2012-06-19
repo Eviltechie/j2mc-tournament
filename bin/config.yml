@@ -1,0 +1,18 @@
+startLocation:
+  world: world
+  a:
+    x: 0
+    y: 128
+    z: 0
+    p: 0
+  b:
+    x: 0
+    y: 128
+    z: 0
+    p: 180
+spawnLocation:
+  x: 0
+  y: 0
+  z: 0
+  p: 0
+inventory: 272,306,307,308,309
