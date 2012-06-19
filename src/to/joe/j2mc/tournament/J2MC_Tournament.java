@@ -18,6 +18,9 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import to.joe.j2mc.core.J2MC_Manager;
+import to.joe.j2mc.tournament.command.JoinCommand;
+import to.joe.j2mc.tournament.command.LeaveCommand;
+import to.joe.j2mc.tournament.command.admin.DuelCommand;
 
 public class J2MC_Tournament extends JavaPlugin implements Listener {
 
@@ -94,6 +97,10 @@ public class J2MC_Tournament extends JavaPlugin implements Listener {
 		items = (ItemStack[]) tempItems.toArray();
 
 		this.getServer().getPluginManager().registerEvents(this, this);
+		
+		this.getCommand("join").setExecutor(new JoinCommand(this));
+		this.getCommand("leave").setExecutor(new LeaveCommand(this));
+		this.getCommand("duel").setExecutor(new DuelCommand(this));
 	}
 
 	@EventHandler
