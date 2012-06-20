@@ -28,7 +28,7 @@ public class DuelCommand extends MasterCommand {
 	@Override
 	public void exec(CommandSender sender, String commandName, String[] args, Player player, boolean isPlayer) {
 		if (args.length < 1) {
-			sender.sendMessage(ChatColor.RED + "Valid commands: kick <player>, add <player>, formup, fight, registration <open/close>");
+			sender.sendMessage(ChatColor.RED + "Valid commands: kick <player>, add <player>, formup, fight, registration <open/close>, reset");
 			return;
 		}
 		if (args[0].equalsIgnoreCase("kick")) {
@@ -83,6 +83,12 @@ public class DuelCommand extends MasterCommand {
 				J2MC_Manager.getCore().getServer().broadcastMessage(ChatColor.AQUA + "Registration for the duel is now CLOSED.");
 			}
 			return;
+		}
+		if (args[0].equalsIgnoreCase("reset")) {
+			this.plugin.registrationOpen = false;
+			this.plugin.participants.clear();
+			this.plugin.roundList.clear();
+			sender.sendMessage(ChatColor.RED + "Registration closed and plugin reset.");
 		}
 		sender.sendMessage(ChatColor.RED + "Invalid command. Type /duel for options");
 	}
