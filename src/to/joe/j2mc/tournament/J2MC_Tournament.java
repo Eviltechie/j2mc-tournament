@@ -1,11 +1,8 @@
 package to.joe.j2mc.tournament;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
-import java.util.Set;
-
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -35,7 +32,6 @@ public class J2MC_Tournament extends JavaPlugin implements Listener {
 	public ArrayList<Player> participants = new ArrayList<Player>(); //List of players who are still in the tournament
 	public boolean registrationOpen = false; //Are new players allowed to enter the tournament?
 	private List<Integer> itemList;
-	private ItemStack[] items;
 	public ArrayList<Player> roundList; //Array of players who will fight. Should always have an even number of players
 	public GameStatus status = GameStatus.Idle;
 
@@ -89,12 +85,7 @@ public class J2MC_Tournament extends JavaPlugin implements Listener {
 		respawnLoc.setPitch(this.getConfig().getInt("spawnLocation.p"));
 
 		//Setup inventory
-		Set<ItemStack> tempItems = new HashSet<ItemStack>();
 		itemList = this.getConfig().getIntegerList("inventory");
-		for (int item : itemList) {
-			tempItems.add(new ItemStack(item));
-		}
-		items = (ItemStack[]) tempItems.toArray();
 
 		this.getServer().getPluginManager().registerEvents(this, this);
 		
@@ -148,7 +139,14 @@ public class J2MC_Tournament extends JavaPlugin implements Listener {
 			for (int x = 0; x < 2; x++) {
 				Player p = roundList.get(x);
 				Inventory pInventory = getServer().createInventory(p, InventoryType.PLAYER);
-				pInventory.addItem(items);
+				pInventory.clear(36);
+				pInventory.clear(37);
+				pInventory.clear(38);
+				pInventory.clear(39);
+				pInventory.clear();
+				for (Integer i : itemList) {
+					pInventory.addItem(new ItemStack(i));
+				}
 				p.setHealth(p.getMaxHealth());
 				p.setFoodLevel(7);
 				p.teleport(startPositionA);
