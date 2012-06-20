@@ -35,7 +35,7 @@ public class J2MC_Tournament extends JavaPlugin implements Listener {
 	public ArrayList<Player> participants = new ArrayList<Player>(); //List of players who are still in the tournament
 	public boolean registrationOpen = false; //Are new players allowed to enter the tournament?
 	private List<Integer> itemList;
-	public ArrayList<Player> roundList; //Array of players who will fight. Should always have an even number of players
+	public ArrayList<Player> roundList = new ArrayList<Player>(); //Array of players who will fight. Should always have an even number of players
 	public GameStatus status = GameStatus.Idle;
 
 	private boolean isPowerOfTwo(int number) {
@@ -102,6 +102,7 @@ public class J2MC_Tournament extends JavaPlugin implements Listener {
 		this.getCommand("join").setExecutor(new JoinCommand(this));
 		this.getCommand("leave").setExecutor(new LeaveCommand(this));
 		this.getCommand("duel").setExecutor(new DuelCommand(this));
+		
 	}
 
 	@EventHandler
