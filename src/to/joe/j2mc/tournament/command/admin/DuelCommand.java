@@ -28,7 +28,7 @@ public class DuelCommand extends MasterCommand {
 	@Override
 	public void exec(CommandSender sender, String commandName, String[] args, Player player, boolean isPlayer) {
 		if (args.length < 1) {
-			sender.sendMessage(ChatColor.RED + "Error, no args provided");
+			sender.sendMessage(ChatColor.RED + "Valid commands: kick <player>, add <player>, formup, fight, registration <open/close>");
 			return;
 		}
 		if (args[0].equalsIgnoreCase("kick")) {
@@ -79,6 +79,7 @@ public class DuelCommand extends MasterCommand {
 			}
 			return;
 		}
+		sender.sendMessage(ChatColor.RED + "Invalid command. Type /duel for options");
 	}
 
 }
