@@ -12,7 +12,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
-import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -53,7 +52,7 @@ public class J2MC_Tournament extends JavaPlugin implements Listener {
 			l.log(Level.INFO, "The roundlist is empty, proceding");
 			if (participants.size() == 1) {
 				l.log(Level.INFO, "Only one player is participating. They must be the winner.");
-				J2MC_Manager.getCore().getServer().broadcastMessage(ChatColor.RED + participants.get(0).getName() + ChatColor.AQUA + " wins this tournament!");
+				J2MC_Manager.getCore().getServer().broadcastMessage(ChatColor.RED + participants.get(0).getName() + ChatColor.AQUA + " is the last player standing and wins this tournament!");
 				participants.clear();
 			} else if (isPowerOfTwo(participants.size())) {
 				l.log(Level.INFO, "Participants is a power of 2. Adding all to roundlist.");
@@ -90,9 +89,9 @@ public class J2MC_Tournament extends JavaPlugin implements Listener {
 		startPositionA = new Location(this.getServer().getWorld(world), this.getConfig().getInt("startLocation.a.x"), this.getConfig().getInt("startLocation.a.y"), this.getConfig().getInt("startLocation.a.z"));
 		startPositionB = new Location(this.getServer().getWorld(world), this.getConfig().getInt("startLocation.b.x"), this.getConfig().getInt("startLocation.b.y"), this.getConfig().getInt("startLocation.b.z"));
 		respawnLoc = new Location(this.getServer().getWorld(world), this.getConfig().getInt("spawnLocation.x"), this.getConfig().getInt("spawnLocation.y"), this.getConfig().getInt("spawnLocation.z"));
-		startPositionA.setPitch(this.getConfig().getInt("startLocation.a.p"));
-		startPositionB.setPitch(this.getConfig().getInt("startLocation.b.p"));
-		respawnLoc.setPitch(this.getConfig().getInt("spawnLocation.p"));
+		startPositionA.setYaw(this.getConfig().getInt("startLocation.a.yaw"));
+		startPositionB.setYaw(this.getConfig().getInt("startLocation.b.yaw"));
+		respawnLoc.setYaw(this.getConfig().getInt("spawnLocation.yaw"));
 
 		//Setup inventory
 		itemList = this.getConfig().getIntegerList("inventory");
@@ -111,16 +110,21 @@ public class J2MC_Tournament extends JavaPlugin implements Listener {
 			if (event.getEntity().equals(roundList.get(0))) {
 				J2MC_Manager.getCore().getServer().broadcastMessage(ChatColor.RED + roundList.get(0).getName() + ChatColor.AQUA + " is has been slain.");
 				J2MC_Manager.getCore().getServer().broadcastMessage(ChatColor.RED + roundList.get(1).getName() + ChatColor.AQUA + " wins this duel!");
+				roundList.get(1).teleport(respawnLoc);
 				participants.remove(roundList.get(0));
-				roundList.get(0).teleport(respawnLoc);
 				status = GameStatus.Idle;
-			}
-			if (event.getEntity().equals(roundList.get(1))) {
+				roundList.remove(0);
+				roundList.remove(0);
+				return;
+			} else if (event.getEntity().equals(roundList.get(1))) {
 				J2MC_Manager.getCore().getServer().broadcastMessage(ChatColor.RED + roundList.get(1).getName() + ChatColor.AQUA + " is has been slain.");
 				J2MC_Manager.getCore().getServer().broadcastMessage(ChatColor.RED + roundList.get(0).getName() + ChatColor.AQUA + " wins this duel!");
+				roundList.get(0).teleport(respawnLoc);
 				participants.remove(roundList.get(1));
-				roundList.get(1).teleport(respawnLoc);
 				status = GameStatus.Idle;
+				roundList.remove(0);
+				roundList.remove(0);
+				return;
 			}
 		}
 	}
@@ -130,39 +134,45 @@ public class J2MC_Tournament extends JavaPlugin implements Listener {
 	 * If one player is offline, the other automatically wins
 	 */
 	public void fight() {
-		if (roundList.size() > 2) {
+		if (roundList.size() >= 2) {
 			//Check for AFK
 			if (!roundList.get(0).isOnline() && !roundList.get(1).isOnline()) {
 				J2MC_Manager.getCore().getServer().broadcastMessage(ChatColor.AQUA + "Both " + ChatColor.RED + roundList.get(0).getName() + ChatColor.AQUA + " and " + ChatColor.RED + roundList.get(1).getName() + ChatColor.AQUA + " are offline.");
 				J2MC_Manager.getCore().getServer().broadcastMessage(ChatColor.AQUA + "Both players are eliminated from the tournament!");
+				return;
 			}
 			if (!roundList.get(0).isOnline()) {
 				J2MC_Manager.getCore().getServer().broadcastMessage(ChatColor.RED + roundList.get(0).getName() + ChatColor.AQUA + " is offline.");
 				J2MC_Manager.getCore().getServer().broadcastMessage(ChatColor.RED + roundList.get(0).getName() + ChatColor.AQUA + " forfeits and " + ChatColor.RED + roundList.get(1).getName() + ChatColor.AQUA + " wins by default!");
+				return;
 			}
 			if (!roundList.get(1).isOnline()) {
 				J2MC_Manager.getCore().getServer().broadcastMessage(ChatColor.RED + roundList.get(1).getName() + ChatColor.AQUA + " is offline.");
 				J2MC_Manager.getCore().getServer().broadcastMessage(ChatColor.RED + roundList.get(1).getName() + ChatColor.AQUA + " forfeits and " + ChatColor.RED + roundList.get(0).getName() + ChatColor.AQUA + " wins by default!");
+				return;
 			}
 			//Both players are online, set status to fighting so the event handler will pay attention
 			status = GameStatus.Fighting;
 			//Give each player a proper inventory, heal them, teleport them to their positions
 			for (int x = 0; x < 2; x++) {
 				Player p = roundList.get(x);
-				Inventory pInventory = getServer().createInventory(p, InventoryType.PLAYER);
+				Inventory pInventory = p.getInventory();
 				pInventory.clear(36);
 				pInventory.clear(37);
 				pInventory.clear(38);
 				pInventory.clear(39);
-				pInventory.clear();
+				pInventory.clear(); //Working
 				for (Integer i : itemList) {
 					pInventory.addItem(new ItemStack(i));
 				}
-				p.setHealth(p.getMaxHealth());
-				p.setFoodLevel(7);
-				p.teleport(startPositionA);
+				p.setHealth(p.getMaxHealth()); //Working
+				p.setFoodLevel(7); //Working
+				if (x == 0) {
+					p.teleport(startPositionA);
+				} else {
+					p.teleport(startPositionB);
+				}
 			}
-
 		}
 	}
 }

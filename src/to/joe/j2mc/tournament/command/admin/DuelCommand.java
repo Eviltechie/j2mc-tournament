@@ -35,6 +35,8 @@ public class DuelCommand extends MasterCommand {
 			if (this.plugin.roundList.isEmpty()) {
 				try {
 					this.plugin.participants.remove(J2MC_Manager.getVisibility().getPlayer(args[1], player));
+					sender.sendMessage(ChatColor.RED + "Kicked player " + ChatColor.RED + args[1]);
+					//TODO full name
 				} catch (BadPlayerMatchException e) {
 					sender.sendMessage(ChatColor.RED + e.getMessage());
 				}
@@ -46,6 +48,8 @@ public class DuelCommand extends MasterCommand {
 		if (args[0].equalsIgnoreCase("add")) {
 			try {
 				this.plugin.participants.add(J2MC_Manager.getVisibility().getPlayer(args[1], player));
+				sender.sendMessage(ChatColor.RED + "Added player " + ChatColor.RED + args[1]);
+				//TODO full name
 			} catch (BadPlayerMatchException e) {
 				sender.sendMessage(ChatColor.RED + e.getMessage());
 			}
@@ -88,7 +92,9 @@ public class DuelCommand extends MasterCommand {
 			this.plugin.registrationOpen = false;
 			this.plugin.participants.clear();
 			this.plugin.roundList.clear();
+			this.plugin.status = GameStatus.Idle;
 			sender.sendMessage(ChatColor.RED + "Registration closed and plugin reset.");
+			return;
 		}
 		sender.sendMessage(ChatColor.RED + "Invalid command. Type /duel for options");
 	}
