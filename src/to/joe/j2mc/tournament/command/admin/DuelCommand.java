@@ -63,6 +63,8 @@ public class DuelCommand extends MasterCommand {
 		if (args[0].equalsIgnoreCase("fight")) {
 			if (this.plugin.status == GameStatus.Fighting) {
 				sender.sendMessage(ChatColor.RED + "A fight is already in progress");
+			} else if (this.plugin.roundList.isEmpty()) {
+				sender.sendMessage(ChatColor.RED + "There are no fights to be had");
 			} else {
 				this.plugin.fight();
 			}
