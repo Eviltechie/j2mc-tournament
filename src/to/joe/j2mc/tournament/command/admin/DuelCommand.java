@@ -52,7 +52,10 @@ public class DuelCommand extends MasterCommand {
 			return;
 		}
 		if (args[0].equalsIgnoreCase("formup")) { //Sets up the round
-			if (this.plugin.roundList.isEmpty()) {
+			if (this.plugin.participants.isEmpty()) {
+				sender.sendMessage(ChatColor.RED + "There are no participants. Cannot formup.");
+				return;
+			} else if (this.plugin.roundList.isEmpty()) {
 				this.plugin.setupRound();
 				sender.sendMessage(ChatColor.AQUA + "Round setup sucessfully");
 			} else {
