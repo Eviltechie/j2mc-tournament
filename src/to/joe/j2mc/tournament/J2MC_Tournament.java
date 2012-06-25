@@ -59,8 +59,8 @@ public class J2MC_Tournament extends JavaPlugin implements Listener {
 				roundList.addAll(participants);
 			} else { //Not power of 2, so must eliminate until power of 2
 				l.log(Level.INFO, "The number of participants is not a power of 2.");
-				int numberToEliminate = 0;
-				while (isPowerOfTwo(participants.size()-numberToEliminate))
+				int numberToEliminate = 1;
+				while (!isPowerOfTwo(participants.size()-numberToEliminate))
 					numberToEliminate++;
 				l.log(Level.INFO, "Must eliminate " + numberToEliminate + " participants to make power of 2");
 				for(int x = 0; x < numberToEliminate*2; x++) {
@@ -163,7 +163,10 @@ public class J2MC_Tournament extends JavaPlugin implements Listener {
 				pInventory.clear(39);
 				pInventory.clear(); //Working
 				for (Integer i : itemList) {
-					pInventory.addItem(new ItemStack(i));
+					if (i.equals(262) || i.equals(341) || i.equals(332))
+						pInventory.addItem(new ItemStack(i, 16));
+					else
+						pInventory.addItem(new ItemStack(i));
 				}
 				p.setHealth(p.getMaxHealth()); //Working
 				p.setFoodLevel(7); //Working

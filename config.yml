@@ -4,15 +4,15 @@ startLocation:
     x: 0
     y: 128
     z: 0
-    y: 0
+    yaw: 0
   b:
     x: 0
     y: 128
     z: 0
-    y: 180
+    yaw: 180
 spawnLocation:
   x: 0
   y: 0
   z: 0
-  y: 0
+  yaw: 0
 inventory: [272,306,307,308,309]
