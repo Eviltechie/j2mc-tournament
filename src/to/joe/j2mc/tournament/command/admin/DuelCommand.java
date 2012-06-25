@@ -36,8 +36,8 @@ public class DuelCommand extends MasterCommand {
 				try {
 					Player p = J2MC_Manager.getVisibility().getPlayer(args[1], player);
 					this.plugin.participants.remove(p);
-					J2MC_Manager.getCore().adminAndLog(ChatColor.RED + "Kicked player " + ChatColor.AQUA + p.getName());
-					J2MC_Manager.getCore().messageNonAdmin(ChatColor.RED + "Kicked player " + ChatColor.AQUA + p.getName());
+					J2MC_Manager.getCore().adminAndLog(ChatColor.RED + p.getName() + ChatColor.AQUA + " has been kicked from the tournament");
+					J2MC_Manager.getCore().messageNonAdmin(ChatColor.RED + p.getName() + ChatColor.AQUA + " has been kicked from the tournament");
 				} catch (BadPlayerMatchException e) {
 					sender.sendMessage(ChatColor.RED + e.getMessage());
 				}
@@ -50,8 +50,8 @@ public class DuelCommand extends MasterCommand {
 			try {
 				Player p = J2MC_Manager.getVisibility().getPlayer(args[1], player);
 				this.plugin.participants.add(p);
-				J2MC_Manager.getCore().adminAndLog(ChatColor.RED + "Added player " + ChatColor.AQUA + p.getName());
-				J2MC_Manager.getCore().messageNonAdmin(ChatColor.RED + "Added player " + ChatColor.AQUA + p.getName());
+				J2MC_Manager.getCore().adminAndLog(ChatColor.RED + p.getName() + ChatColor.AQUA + " has been added to the tournament");
+				J2MC_Manager.getCore().messageNonAdmin(ChatColor.RED + p.getName() + ChatColor.AQUA + " has been added to the tournament");
 			} catch (BadPlayerMatchException e) {
 				sender.sendMessage(ChatColor.RED + e.getMessage());
 			}
