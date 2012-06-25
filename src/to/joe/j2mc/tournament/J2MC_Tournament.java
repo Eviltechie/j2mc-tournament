@@ -3,9 +3,6 @@ package to.joe.j2mc.tournament;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -47,22 +44,16 @@ public class J2MC_Tournament extends JavaPlugin implements Listener {
 	 * If it is not a power of 2, the playerList is scrambled (because participants isn't seeded) and enough pairs are picked to bring the number down to a power of 2.
 	 */
 	public void setupRound() {
-		Logger l = J2MC_Manager.getCore().getServer().getLogger();
 		if (roundList.isEmpty()) {
-			l.log(Level.INFO, "The roundlist is empty, proceding");
 			if (participants.size() == 1) {
-				l.log(Level.INFO, "Only one player is participating. They must be the winner.");
 				J2MC_Manager.getCore().getServer().broadcastMessage(ChatColor.RED + participants.get(0).getName() + ChatColor.AQUA + " is the last player standing and wins this tournament!");
 				participants.clear();
 			} else if (isPowerOfTwo(participants.size())) {
-				l.log(Level.INFO, "Participants is a power of 2. Adding all to roundlist.");
 				roundList.addAll(participants);
 			} else { //Not power of 2, so must eliminate until power of 2
-				l.log(Level.INFO, "The number of participants is not a power of 2.");
 				int numberToEliminate = 1;
 				while (!isPowerOfTwo(participants.size()-numberToEliminate))
 					numberToEliminate++;
-				l.log(Level.INFO, "Must eliminate " + numberToEliminate + " participants to make power of 2");
 				for(int x = 0; x < numberToEliminate*2; x++) {
 					//select random person
 					Random playerPicker = new Random();
