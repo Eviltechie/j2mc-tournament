@@ -3,6 +3,9 @@ package to.joe.j2mc.tournament;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -69,10 +72,7 @@ public class J2MC_Tournament extends JavaPlugin implements Listener {
 		}
 	}
 
-	public void reload() {
-		//Read configuration
-		this.getConfig().options().copyDefaults(true);
-		this.saveConfig();
+	public void load() {
 
 		//Setup start positions
 		String world = this.getConfig().getString("startLocation.world");
@@ -89,7 +89,12 @@ public class J2MC_Tournament extends JavaPlugin implements Listener {
 
 	@Override
 	public void onEnable() {
-		reload();
+
+		//Read configuration
+		this.getConfig().options().copyDefaults(true);
+		this.saveConfig();
+		
+		load();
 
 		this.getServer().getPluginManager().registerEvents(this, this);
 
@@ -101,11 +106,13 @@ public class J2MC_Tournament extends JavaPlugin implements Listener {
 
 	@EventHandler
 	public void onDeath(PlayerDeathEvent event) {
+		Logger l = J2MC_Manager.getCore().getLogger();
 		if (status == GameStatus.Fighting) {
 			event.getDrops().clear();
 			if (event.getEntity().equals(roundList.get(0))) {
 				J2MC_Manager.getCore().getServer().broadcastMessage(ChatColor.RED + roundList.get(0).getName() + ChatColor.AQUA + " is has been slain.");
 				J2MC_Manager.getCore().getServer().broadcastMessage(ChatColor.RED + roundList.get(1).getName() + ChatColor.AQUA + " wins this duel!");
+				l.log(Level.INFO, roundList.get(0).getName() + " killed, " + roundList.get(1).getName() + " wins");
 				roundList.get(1).teleport(respawnLoc);
 				participants.remove(roundList.get(0));
 				status = GameStatus.Idle;
@@ -115,6 +122,7 @@ public class J2MC_Tournament extends JavaPlugin implements Listener {
 			} else if (event.getEntity().equals(roundList.get(1))) {
 				J2MC_Manager.getCore().getServer().broadcastMessage(ChatColor.RED + roundList.get(1).getName() + ChatColor.AQUA + " is has been slain.");
 				J2MC_Manager.getCore().getServer().broadcastMessage(ChatColor.RED + roundList.get(0).getName() + ChatColor.AQUA + " wins this duel!");
+				l.log(Level.INFO, roundList.get(1).getName() + " killed, " + roundList.get(0).getName() + " wins");
 				roundList.get(0).teleport(respawnLoc);
 				participants.remove(roundList.get(1));
 				status = GameStatus.Idle;
@@ -130,23 +138,39 @@ public class J2MC_Tournament extends JavaPlugin implements Listener {
 	 * If one player is offline, the other automatically wins
 	 */
 	public void fight() {
+		Logger l = J2MC_Manager.getCore().getLogger();
+		l.log(Level.INFO, roundList.get(0).getName() + " and " + roundList.get(1).getName() + " fighting");
 		if (roundList.size() >= 2) {
 			//Check for AFK
 			if (!roundList.get(0).isOnline() && !roundList.get(1).isOnline()) {
 				J2MC_Manager.getCore().getServer().broadcastMessage(ChatColor.AQUA + "Both " + ChatColor.RED + roundList.get(0).getName() + ChatColor.AQUA + " and " + ChatColor.RED + roundList.get(1).getName() + ChatColor.AQUA + " are offline.");
 				J2MC_Manager.getCore().getServer().broadcastMessage(ChatColor.AQUA + "Both players are eliminated from the tournament!");
+				l.log(Level.INFO, "both" + roundList.get(0).getName() + " and " + roundList.get(1).getName() + " were offline, both removed");
+				roundList.remove(0);
+				roundList.remove(0);
+				participants.remove(0);
+				participants.remove(0);
 				return;
 			}
 			if (!roundList.get(0).isOnline()) {
 				J2MC_Manager.getCore().getServer().broadcastMessage(ChatColor.RED + roundList.get(0).getName() + ChatColor.AQUA + " is offline.");
 				J2MC_Manager.getCore().getServer().broadcastMessage(ChatColor.RED + roundList.get(0).getName() + ChatColor.AQUA + " forfeits and " + ChatColor.RED + roundList.get(1).getName() + ChatColor.AQUA + " wins by default!");
+				l.log(Level.INFO, roundList.get(0).getName() + " offline, " + roundList.get(1).getName() + " wins");
+				roundList.remove(0);
+				roundList.remove(0);
+				participants.remove(0);
 				return;
 			}
 			if (!roundList.get(1).isOnline()) {
 				J2MC_Manager.getCore().getServer().broadcastMessage(ChatColor.RED + roundList.get(1).getName() + ChatColor.AQUA + " is offline.");
 				J2MC_Manager.getCore().getServer().broadcastMessage(ChatColor.RED + roundList.get(1).getName() + ChatColor.AQUA + " forfeits and " + ChatColor.RED + roundList.get(0).getName() + ChatColor.AQUA + " wins by default!");
+				l.log(Level.INFO, roundList.get(1).getName() + " offline, " + roundList.get(0).getName() + " wins");
+				roundList.remove(0);
+				roundList.remove(0);
+				participants.remove(1);
 				return;
 			}
+			J2MC_Manager.getCore().getServer().broadcastMessage(ChatColor.AQUA + "Now fighting: " + ChatColor.RED + roundList.get(0).getName() + ChatColor.AQUA + " and " + ChatColor.RED + roundList.get(1).getName());
 			//Both players are online, set status to fighting so the event handler will pay attention
 			status = GameStatus.Fighting;
 			//Give each player a proper inventory, heal them, teleport them to their positions

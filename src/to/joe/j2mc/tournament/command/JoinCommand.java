@@ -19,6 +19,9 @@ public class JoinCommand extends MasterCommand {
 
 	@Override
 	public void exec(CommandSender sender, String commandName, String[] args, Player player, boolean isPlayer) {
+		if (!(sender instanceof Player)) {
+			sender.sendMessage(ChatColor.RED + "Only players may use this command");
+		}
 		if (this.plugin.participants.contains(player)) {
 			sender.sendMessage(ChatColor.AQUA + "You are already signed up for this tournament");
 		} else if (this.plugin.registrationOpen) {

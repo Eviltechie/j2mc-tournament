@@ -19,6 +19,9 @@ public class LeaveCommand extends MasterCommand {
 	
 	@Override
 	public void exec(CommandSender sender, String commandName, String[] args, Player player, boolean isPlayer) {
+		if (!(sender instanceof Player)) {
+			sender.sendMessage(ChatColor.RED + "Only players may use this command");
+		}
 		if (this.plugin.participants.contains(player)) {
 			this.plugin.participants.remove(player);
 			sender.sendMessage(ChatColor.AQUA + "You have dropped yourself from the tournament");

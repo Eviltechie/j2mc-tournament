@@ -106,7 +106,8 @@ public class DuelCommand extends MasterCommand {
 			return;
 		}
 		if (args[0].equalsIgnoreCase("reload")) {
-			this.plugin.reload();
+			this.plugin.reloadConfig();
+			this.plugin.load();
 			sender.sendMessage(ChatColor.RED + "Configuration reloaded");
 			return;
 		}

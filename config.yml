@@ -1,18 +1,25 @@
 startLocation:
   world: world
   a:
-    x: 0
-    y: 128
-    z: 0
+    x: 129
+    y: 76
+    z: 93
     yaw: 0
   b:
-    x: 0
-    y: 128
-    z: 0
+    x: 129
+    y: 76
+    z: 105
     yaw: 180
 spawnLocation:
-  x: 0
-  y: 0
-  z: 0
-  yaw: 0
-inventory: [272,306,307,308,309]
+  x: 124
+  y: 77
+  z: 98
+  yaw: 90
+inventory:
+- 272
+- 306
+- 307
+- 308
+- 309
+- 261
+- 262
