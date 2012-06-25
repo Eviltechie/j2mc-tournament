@@ -11,6 +11,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import to.joe.j2mc.core.J2MC_Manager;
@@ -151,19 +152,19 @@ public class J2MC_Tournament extends JavaPlugin implements Listener {
 			//Give each player a proper inventory, heal them, teleport them to their positions
 			for (int x = 0; x < 2; x++) {
 				Player p = roundList.get(x);
-				Inventory pInventory = p.getInventory();
+				PlayerInventory pInventory = p.getInventory();
 				pInventory.clear(); //Working
 				for (Integer i : itemList) {
 					if (i.equals(262) || i.equals(341) || i.equals(332))
 						pInventory.addItem(new ItemStack(i, 16));
 					else if (i.equals(298) || i.equals(302) || i.equals(306) || i.equals(310) || i.equals(314) || i.equals(86))
-						pInventory.setItem(103, new ItemStack(i));
+						pInventory.setHelmet(new ItemStack(i));
 					else if (i.equals(299) || i.equals(303) || i.equals(307) || i.equals(311) || i.equals(315))
-						pInventory.setItem(102, new ItemStack(i));
+						pInventory.setChestplate(new ItemStack(i));
 					else if (i.equals(300) || i.equals(304) || i.equals(308) || i.equals(312) || i.equals(316))
-						pInventory.setItem(101, new ItemStack(i));
+						pInventory.setLeggings(new ItemStack(i));
 					else if (i.equals(301) || i.equals(305) || i.equals(309) || i.equals(313) || i.equals(317))
-						pInventory.setItem(100, new ItemStack(i));
+						pInventory.setBoots(new ItemStack(i));
 					else
 						pInventory.addItem(new ItemStack(i));
 				}
