@@ -34,9 +34,10 @@ public class DuelCommand extends MasterCommand {
 		if (args[0].equalsIgnoreCase("kick")) {
 			if (this.plugin.roundList.isEmpty()) {
 				try {
-					this.plugin.participants.remove(J2MC_Manager.getVisibility().getPlayer(args[1], player));
-					sender.sendMessage(ChatColor.RED + "Kicked player " + ChatColor.RED + args[1]);
-					//TODO full name
+					Player p = J2MC_Manager.getVisibility().getPlayer(args[1], player);
+					this.plugin.participants.remove(p);
+					J2MC_Manager.getCore().adminAndLog(ChatColor.RED + "Kicked player " + ChatColor.AQUA + p.getName());
+					J2MC_Manager.getCore().messageNonAdmin(ChatColor.RED + "Kicked player " + ChatColor.AQUA + p.getName());
 				} catch (BadPlayerMatchException e) {
 					sender.sendMessage(ChatColor.RED + e.getMessage());
 				}
@@ -47,9 +48,10 @@ public class DuelCommand extends MasterCommand {
 		}
 		if (args[0].equalsIgnoreCase("add")) {
 			try {
-				this.plugin.participants.add(J2MC_Manager.getVisibility().getPlayer(args[1], player));
-				sender.sendMessage(ChatColor.RED + "Added player " + ChatColor.RED + args[1]);
-				//TODO full name
+				Player p = J2MC_Manager.getVisibility().getPlayer(args[1], player);
+				this.plugin.participants.add(p);
+				J2MC_Manager.getCore().adminAndLog(ChatColor.RED + "Added player " + ChatColor.AQUA + p.getName());
+				J2MC_Manager.getCore().messageNonAdmin(ChatColor.RED + "Added player " + ChatColor.AQUA + p.getName());
 			} catch (BadPlayerMatchException e) {
 				sender.sendMessage(ChatColor.RED + e.getMessage());
 			}
@@ -77,10 +79,17 @@ public class DuelCommand extends MasterCommand {
 			}
 			return;
 		}
+		if (args[0].equals("r")) {
+			if (this.plugin.registrationOpen)
+				J2MC_Manager.getCore().getServer().broadcastMessage(ChatColor.AQUA + "Registration for the duel is now OPEN. Type " + ChatColor.RED + "/join" + ChatColor.AQUA + " to enter");
+			else
+				sender.sendMessage(ChatColor.RED + "Registration is closed you twat");
+			return;
+		}
 		if (args[0].equalsIgnoreCase("registration")) {
 			if (args[1].equalsIgnoreCase("open")) {
 				this.plugin.registrationOpen = true;
-				J2MC_Manager.getCore().getServer().broadcastMessage(ChatColor.AQUA + "Registration for the duel is now OPEN. Type /join to enter");
+				J2MC_Manager.getCore().getServer().broadcastMessage(ChatColor.AQUA + "Registration for the duel is now OPEN. Type " + ChatColor.RED + "/join" + ChatColor.AQUA + " to enter");
 			}
 			if (args[1].equalsIgnoreCase("close")) {
 				this.plugin.registrationOpen = false;
@@ -94,6 +103,11 @@ public class DuelCommand extends MasterCommand {
 			this.plugin.roundList.clear();
 			this.plugin.status = GameStatus.Idle;
 			sender.sendMessage(ChatColor.RED + "Registration closed and plugin reset.");
+			return;
+		}
+		if (args[0].equalsIgnoreCase("reload")) {
+			this.plugin.reload();
+			sender.sendMessage(ChatColor.RED + "Configuration reloaded");
 			return;
 		}
 		sender.sendMessage(ChatColor.RED + "Invalid command. Type /duel for options");

@@ -78,8 +78,7 @@ public class J2MC_Tournament extends JavaPlugin implements Listener {
 		}
 	}
 
-	@Override
-	public void onEnable() {
+	public void reload() {
 		//Read configuration
 		this.getConfig().options().copyDefaults(true);
 		this.saveConfig();
@@ -95,13 +94,18 @@ public class J2MC_Tournament extends JavaPlugin implements Listener {
 
 		//Setup inventory
 		itemList = this.getConfig().getIntegerList("inventory");
+	}
+
+	@Override
+	public void onEnable() {
+		reload();
 
 		this.getServer().getPluginManager().registerEvents(this, this);
-		
+
 		this.getCommand("join").setExecutor(new JoinCommand(this));
 		this.getCommand("leave").setExecutor(new LeaveCommand(this));
 		this.getCommand("duel").setExecutor(new DuelCommand(this));
-		
+
 	}
 
 	@EventHandler
