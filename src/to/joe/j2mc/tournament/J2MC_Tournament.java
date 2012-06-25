@@ -157,14 +157,18 @@ public class J2MC_Tournament extends JavaPlugin implements Listener {
 			for (int x = 0; x < 2; x++) {
 				Player p = roundList.get(x);
 				Inventory pInventory = p.getInventory();
-				pInventory.clear(36);
-				pInventory.clear(37);
-				pInventory.clear(38);
-				pInventory.clear(39);
 				pInventory.clear(); //Working
 				for (Integer i : itemList) {
 					if (i.equals(262) || i.equals(341) || i.equals(332))
 						pInventory.addItem(new ItemStack(i, 16));
+					else if (i.equals(298) || i.equals(302) || i.equals(306) || i.equals(310) || i.equals(314) || i.equals(86))
+						pInventory.setItem(103, new ItemStack(i));
+					else if (i.equals(299) || i.equals(303) || i.equals(307) || i.equals(311) || i.equals(315))
+						pInventory.setItem(102, new ItemStack(i));
+					else if (i.equals(300) || i.equals(304) || i.equals(308) || i.equals(312) || i.equals(316))
+						pInventory.setItem(101, new ItemStack(i));
+					else if (i.equals(301) || i.equals(305) || i.equals(309) || i.equals(313) || i.equals(317))
+						pInventory.setItem(100, new ItemStack(i));
 					else
 						pInventory.addItem(new ItemStack(i));
 				}
