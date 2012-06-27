@@ -23,8 +23,6 @@ import to.joe.j2mc.tournament.command.LeaveCommand;
 import to.joe.j2mc.tournament.command.admin.DuelCommand;
 
 public class J2MC_Tournament extends JavaPlugin implements Listener {
-	
-	//TODO Fix reload
 
 	public enum GameStatus {
 		Fighting, //Two players are currently fighting. Listener should pay attention to the two players on the top of roundList
@@ -36,7 +34,7 @@ public class J2MC_Tournament extends JavaPlugin implements Listener {
 	private Location respawnLoc;
 	public ArrayList<Player> participants = new ArrayList<Player>(); //List of players who are still in the tournament
 	public boolean registrationOpen = false; //Are new players allowed to enter the tournament?
-	private List<Integer> itemList;
+	public List<Integer> itemList;
 	public ArrayList<Player> roundList = new ArrayList<Player>(); //Array of players who will fight. Should always have an even number of players
 	public GameStatus status = GameStatus.Idle;
 
