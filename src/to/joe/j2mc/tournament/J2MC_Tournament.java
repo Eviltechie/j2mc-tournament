@@ -12,6 +12,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -22,6 +23,8 @@ import to.joe.j2mc.tournament.command.LeaveCommand;
 import to.joe.j2mc.tournament.command.admin.DuelCommand;
 
 public class J2MC_Tournament extends JavaPlugin implements Listener {
+	
+	//TODO Fix reload
 
 	public enum GameStatus {
 		Fighting, //Two players are currently fighting. Listener should pay attention to the two players on the top of roundList
@@ -103,6 +106,36 @@ public class J2MC_Tournament extends JavaPlugin implements Listener {
 		this.getCommand("duel").setExecutor(new DuelCommand(this));
 
 	}
+	
+	@EventHandler
+	public void onDisconnect(PlayerQuitEvent event) {
+		Logger l = J2MC_Manager.getCore().getLogger();
+		if (status == GameStatus.Fighting) {
+			if (event.getPlayer().equals(roundList.get(0))) {
+				J2MC_Manager.getCore().getServer().broadcastMessage(ChatColor.RED + roundList.get(0).getName() + ChatColor.AQUA + " has abandoned the fight.");
+				J2MC_Manager.getCore().getServer().broadcastMessage(ChatColor.RED + roundList.get(1).getName() + ChatColor.AQUA + " wins this duel!");
+				l.log(Level.INFO, roundList.get(0).getName() + " left, " + roundList.get(1).getName() + " wins");
+				roundList.get(0).teleport(respawnLoc);
+				roundList.get(1).teleport(respawnLoc);
+				participants.remove(roundList.get(0));
+				status = GameStatus.Idle;
+				roundList.remove(0);
+				roundList.remove(0);
+				return;
+			} else if (event.getPlayer().equals(roundList.get(1))) {
+				J2MC_Manager.getCore().getServer().broadcastMessage(ChatColor.RED + roundList.get(1).getName() + ChatColor.AQUA + " has abandoned the fight.");
+				J2MC_Manager.getCore().getServer().broadcastMessage(ChatColor.RED + roundList.get(0).getName() + ChatColor.AQUA + " wins this duel!");
+				l.log(Level.INFO, roundList.get(1).getName() + " left, " + roundList.get(0).getName() + " wins");
+				roundList.get(0).teleport(respawnLoc);
+				roundList.get(1).teleport(respawnLoc);
+				participants.remove(roundList.get(1));
+				status = GameStatus.Idle;
+				roundList.remove(0);
+				roundList.remove(0);
+				return;
+			}
+		}
+	}
 
 	@EventHandler
 	public void onDeath(PlayerDeathEvent event) {
@@ -145,7 +178,7 @@ public class J2MC_Tournament extends JavaPlugin implements Listener {
 			if (!roundList.get(0).isOnline() && !roundList.get(1).isOnline()) {
 				J2MC_Manager.getCore().getServer().broadcastMessage(ChatColor.AQUA + "Both " + ChatColor.RED + roundList.get(0).getName() + ChatColor.AQUA + " and " + ChatColor.RED + roundList.get(1).getName() + ChatColor.AQUA + " are offline.");
 				J2MC_Manager.getCore().getServer().broadcastMessage(ChatColor.AQUA + "Both players are eliminated from the tournament!");
-				l.log(Level.INFO, "both" + roundList.get(0).getName() + " and " + roundList.get(1).getName() + " were offline, both removed");
+				l.log(Level.INFO, "both " + roundList.get(0).getName() + " and " + roundList.get(1).getName() + " were offline, both removed");
 				roundList.remove(0);
 				roundList.remove(0);
 				participants.remove(0);
