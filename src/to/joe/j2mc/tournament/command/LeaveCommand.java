@@ -19,7 +19,6 @@ public class LeaveCommand extends MasterCommand {
 	
 	@Override
 	public void exec(CommandSender sender, String commandName, String[] args, Player player, boolean isPlayer) {
-		//TODO Don't let players use this while the tournament has started
 		if (!(sender instanceof Player)) {
 			sender.sendMessage(ChatColor.RED + "Only players may use this command");
 			return;
