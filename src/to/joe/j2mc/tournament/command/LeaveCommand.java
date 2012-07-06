@@ -19,8 +19,13 @@ public class LeaveCommand extends MasterCommand {
 	
 	@Override
 	public void exec(CommandSender sender, String commandName, String[] args, Player player, boolean isPlayer) {
+		//TODO Don't let players use this while the tournament has started
 		if (!(sender instanceof Player)) {
 			sender.sendMessage(ChatColor.RED + "Only players may use this command");
+			return;
+		}
+		if (this.plugin.roundList.contains(player)) {
+			sender.sendMessage(ChatColor.RED + "You cannot remove yourself when you are scheduled to fight.");
 			return;
 		}
 		if (this.plugin.participants.contains(player)) {
@@ -32,5 +37,4 @@ public class LeaveCommand extends MasterCommand {
 			sender.sendMessage(ChatColor.AQUA + "You must be in the tournament to remove yourself from it");
 		}
 	}
-
 }
