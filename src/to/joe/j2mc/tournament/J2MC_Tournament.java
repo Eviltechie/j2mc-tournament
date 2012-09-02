@@ -24,213 +24,181 @@ import to.joe.j2mc.tournament.command.admin.DuelCommand;
 
 public class J2MC_Tournament extends JavaPlugin implements Listener {
 
-	public enum GameStatus {
-		Fighting, //Two players are currently fighting. Listener should pay attention to the two players on the top of roundList
-		Idle, //Nobody is fighting. Listener should ignore all deaths.
-	}
+    public enum GameStatus {
+        Fighting, Idle,
+    }
 
-	private Location startPositionA; //The start position of the first player
-	private Location startPositionB; //The start position of the second player
-	private Location respawnLoc;
-	public ArrayList<Player> participants = new ArrayList<Player>(); //List of players who are still in the tournament
-	public boolean registrationOpen = false; //Are new players allowed to enter the tournament?
-	public List<Integer> itemList;
-	public ArrayList<Player> roundList = new ArrayList<Player>(); //Array of players who will fight. Should always have an even number of players
-	public GameStatus status = GameStatus.Idle;
+    private Location startPositionA;
+    private Location startPositionB;
+    private Location respawnPosition;
+    public ArrayList<String> participants;
+    public ArrayList<String> roundList;
+    public boolean registrationOpen = false;
+    public List<Integer> itemList;
+    public GameStatus status = GameStatus.Idle;
 
-	private boolean isPowerOfTwo(int number) {
-		return (number != 0) && ((number & (number - 1)) == 0);
-	}
+    private boolean isPowerOfTwo(int number) {
+        return (number != 0) && ((number & (number - 1)) == 0);
+    }
 
-	/*
-	 * Sets up the round by filling roundList with an even number of Players who are made to fight
-	 * If the number of players is a power of 2, then players fight in order
-	 * If it is not a power of 2, the playerList is scrambled (because participants isn't seeded) and enough pairs are picked to bring the number down to a power of 2.
-	 */
-	public void setupRound() {
-		if (roundList.isEmpty()) {
-			if (participants.size() == 1) {
-				J2MC_Manager.getCore().getServer().broadcastMessage(ChatColor.RED + participants.get(0).getName() + ChatColor.AQUA + " is the last player standing and wins this tournament!");
-				participants.clear();
-			} else if (isPowerOfTwo(participants.size())) {
-				roundList.addAll(participants);
-			} else { //Not power of 2, so must eliminate until power of 2
-				int numberToEliminate = 1;
-				while (!isPowerOfTwo(participants.size()-numberToEliminate))
-					numberToEliminate++;
-				for(int x = 0; x < numberToEliminate*2; x++) {
-					//select random person
-					Random playerPicker = new Random();
-					while(true) {
-						int playerNumber = playerPicker.nextInt(participants.size());
-						if (!roundList.contains(participants.get(playerNumber))) {
-							roundList.add(participants.get(playerNumber));
-							break;
-						}
-					}
-				}
-			}
-		}
-	}
+    public void setupRound() { //Fills roundlist with pairs to fight each other
+        if (roundList.isEmpty()) { //If this isn't empty, do nothing because there are fights to be had
+            if (participants.size() == 1) { //Only one player left, winner
+                J2MC_Manager.getCore().getServer().broadcastMessage(ChatColor.RED + participants.get(0) + ChatColor.AQUA + " is the last player standing and wins this tournament!");
+            } else if (isPowerOfTwo(participants.size())) { //Power of two, everybody can fight
+                roundList.addAll(participants);
+            } else { //Not a power of two, this creates a bye with random pairs
+                int numberToEliminate = 1;
+                while (!isPowerOfTwo(participants.size() - numberToEliminate))
+                    numberToEliminate++;
+                for (int x = 0; x < numberToEliminate * 2; x++) {
+                    //select random person
+                    Random playerPicker = new Random();
+                    while (true) {
+                        int playerNumber = playerPicker.nextInt(participants.size());
+                        if (!roundList.contains(participants.get(playerNumber))) {
+                            roundList.add(participants.get(playerNumber));
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+    }
 
-	public void load() {
+    public void load() {
+        //Setup start positions
+        String world = this.getConfig().getString("startLocation.world");
+        startPositionA = new Location(this.getServer().getWorld(world), this.getConfig().getInt("startLocation.a.x"), this.getConfig().getInt("startLocation.a.y"), this.getConfig().getInt("startLocation.a.z"));
+        startPositionB = new Location(this.getServer().getWorld(world), this.getConfig().getInt("startLocation.b.x"), this.getConfig().getInt("startLocation.b.y"), this.getConfig().getInt("startLocation.b.z"));
+        respawnPosition = new Location(this.getServer().getWorld(world), this.getConfig().getInt("spawnLocation.x"), this.getConfig().getInt("spawnLocation.y"), this.getConfig().getInt("spawnLocation.z"));
+        startPositionA.setYaw(this.getConfig().getInt("startLocation.a.yaw"));
+        startPositionB.setYaw(this.getConfig().getInt("startLocation.b.yaw"));
+        respawnPosition.setYaw(this.getConfig().getInt("spawnLocation.yaw"));
 
-		//Setup start positions
-		String world = this.getConfig().getString("startLocation.world");
-		startPositionA = new Location(this.getServer().getWorld(world), this.getConfig().getInt("startLocation.a.x"), this.getConfig().getInt("startLocation.a.y"), this.getConfig().getInt("startLocation.a.z"));
-		startPositionB = new Location(this.getServer().getWorld(world), this.getConfig().getInt("startLocation.b.x"), this.getConfig().getInt("startLocation.b.y"), this.getConfig().getInt("startLocation.b.z"));
-		respawnLoc = new Location(this.getServer().getWorld(world), this.getConfig().getInt("spawnLocation.x"), this.getConfig().getInt("spawnLocation.y"), this.getConfig().getInt("spawnLocation.z"));
-		startPositionA.setYaw(this.getConfig().getInt("startLocation.a.yaw"));
-		startPositionB.setYaw(this.getConfig().getInt("startLocation.b.yaw"));
-		respawnLoc.setYaw(this.getConfig().getInt("spawnLocation.yaw"));
+        //Setup inventory
+        itemList = this.getConfig().getIntegerList("inventory");
+    }
 
-		//Setup inventory
-		itemList = this.getConfig().getIntegerList("inventory");
-	}
+    @Override
+    public void onEnable() {
+        //Read configuration
+        this.getConfig().options().copyDefaults(true);
+        this.saveConfig();
 
-	@Override
-	public void onEnable() {
+        load();
 
-		//Read configuration
-		this.getConfig().options().copyDefaults(true);
-		this.saveConfig();
-		
-		load();
+        this.getServer().getPluginManager().registerEvents(this, this);
 
-		this.getServer().getPluginManager().registerEvents(this, this);
+        this.getCommand("join").setExecutor(new JoinCommand(this));
+        this.getCommand("leave").setExecutor(new LeaveCommand(this));
+        this.getCommand("duel").setExecutor(new DuelCommand(this));
+    }
+    
+    public void processKill(String victor, String loser, boolean killed) {
+        Player v = J2MC_Manager.getCore().getServer().getPlayer(victor);
+        Player l = J2MC_Manager.getCore().getServer().getPlayer(loser);
+        Logger logger = J2MC_Manager.getCore().getLogger();
+        if (killed) {
+            J2MC_Manager.getCore().getServer().broadcastMessage(ChatColor.RED + loser + ChatColor.AQUA + " has been slain.");
+            logger.log(Level.INFO, loser + " has been slain, " + victor + " wins");
+        } else {
+            J2MC_Manager.getCore().getServer().broadcastMessage(ChatColor.RED + loser + ChatColor.AQUA + " has abandoned the fight.");
+            logger.log(Level.INFO, loser + " has disconnected, " + victor + " wins");
+            l.teleport(respawnPosition);
+        }
+        v.teleport(respawnPosition);
+        status = GameStatus.Idle;
+        participants.remove(l);
+        J2MC_Manager.getCore().getServer().broadcastMessage(ChatColor.RED + victor + ChatColor.AQUA + " wins this duel!");
+    }
 
-		this.getCommand("join").setExecutor(new JoinCommand(this));
-		this.getCommand("leave").setExecutor(new LeaveCommand(this));
-		this.getCommand("duel").setExecutor(new DuelCommand(this));
-
-	}
-	
-	@EventHandler
-	public void onDisconnect(PlayerQuitEvent event) {
-		Logger l = J2MC_Manager.getCore().getLogger();
-		if (status == GameStatus.Fighting) {
-			if (event.getPlayer().equals(roundList.get(0))) {
-				J2MC_Manager.getCore().getServer().broadcastMessage(ChatColor.RED + roundList.get(0).getName() + ChatColor.AQUA + " has abandoned the fight.");
-				J2MC_Manager.getCore().getServer().broadcastMessage(ChatColor.RED + roundList.get(1).getName() + ChatColor.AQUA + " wins this duel!");
-				l.log(Level.INFO, roundList.get(0).getName() + " left, " + roundList.get(1).getName() + " wins");
-				roundList.get(0).teleport(respawnLoc);
-				roundList.get(1).teleport(respawnLoc);
-				participants.remove(roundList.get(0));
-				status = GameStatus.Idle;
-				roundList.remove(0);
-				roundList.remove(0);
-				return;
-			} else if (event.getPlayer().equals(roundList.get(1))) {
-				J2MC_Manager.getCore().getServer().broadcastMessage(ChatColor.RED + roundList.get(1).getName() + ChatColor.AQUA + " has abandoned the fight.");
-				J2MC_Manager.getCore().getServer().broadcastMessage(ChatColor.RED + roundList.get(0).getName() + ChatColor.AQUA + " wins this duel!");
-				l.log(Level.INFO, roundList.get(1).getName() + " left, " + roundList.get(0).getName() + " wins");
-				roundList.get(0).teleport(respawnLoc);
-				roundList.get(1).teleport(respawnLoc);
-				participants.remove(roundList.get(1));
-				status = GameStatus.Idle;
-				roundList.remove(0);
-				roundList.remove(0);
-				return;
-			}
-		}
-	}
-
-	@EventHandler
-	public void onDeath(PlayerDeathEvent event) {
-		Logger l = J2MC_Manager.getCore().getLogger();
-		if (status == GameStatus.Fighting) {
-			event.getDrops().clear();
-			if (event.getEntity().equals(roundList.get(0))) {
-				J2MC_Manager.getCore().getServer().broadcastMessage(ChatColor.RED + roundList.get(0).getName() + ChatColor.AQUA + " is has been slain.");
-				J2MC_Manager.getCore().getServer().broadcastMessage(ChatColor.RED + roundList.get(1).getName() + ChatColor.AQUA + " wins this duel!");
-				l.log(Level.INFO, roundList.get(0).getName() + " killed, " + roundList.get(1).getName() + " wins");
-				roundList.get(1).teleport(respawnLoc);
-				participants.remove(roundList.get(0));
-				status = GameStatus.Idle;
-				roundList.remove(0);
-				roundList.remove(0);
-				return;
-			} else if (event.getEntity().equals(roundList.get(1))) {
-				J2MC_Manager.getCore().getServer().broadcastMessage(ChatColor.RED + roundList.get(1).getName() + ChatColor.AQUA + " is has been slain.");
-				J2MC_Manager.getCore().getServer().broadcastMessage(ChatColor.RED + roundList.get(0).getName() + ChatColor.AQUA + " wins this duel!");
-				l.log(Level.INFO, roundList.get(1).getName() + " killed, " + roundList.get(0).getName() + " wins");
-				roundList.get(0).teleport(respawnLoc);
-				participants.remove(roundList.get(1));
-				status = GameStatus.Idle;
-				roundList.remove(0);
-				roundList.remove(0);
-				return;
-			}
-		}
-	}
-	/*
-	 * Takes the first two players and first checks if they are both online
-	 * If both are offline, both are eliminated
-	 * If one player is offline, the other automatically wins
-	 */
-	public void fight() {
-		Logger l = J2MC_Manager.getCore().getLogger();
-		l.log(Level.INFO, roundList.get(0).getName() + " and " + roundList.get(1).getName() + " fighting");
-		if (roundList.size() >= 2) {
-			//Check for AFK
-			if (!roundList.get(0).isOnline() && !roundList.get(1).isOnline()) {
-				J2MC_Manager.getCore().getServer().broadcastMessage(ChatColor.AQUA + "Both " + ChatColor.RED + roundList.get(0).getName() + ChatColor.AQUA + " and " + ChatColor.RED + roundList.get(1).getName() + ChatColor.AQUA + " are offline.");
-				J2MC_Manager.getCore().getServer().broadcastMessage(ChatColor.AQUA + "Both players are eliminated from the tournament!");
-				l.log(Level.INFO, "both " + roundList.get(0).getName() + " and " + roundList.get(1).getName() + " were offline, both removed");
-				roundList.remove(0);
-				roundList.remove(0);
-				participants.remove(0);
-				participants.remove(0);
-				return;
-			}
-			if (!roundList.get(0).isOnline()) {
-				J2MC_Manager.getCore().getServer().broadcastMessage(ChatColor.RED + roundList.get(0).getName() + ChatColor.AQUA + " is offline.");
-				J2MC_Manager.getCore().getServer().broadcastMessage(ChatColor.RED + roundList.get(0).getName() + ChatColor.AQUA + " forfeits and " + ChatColor.RED + roundList.get(1).getName() + ChatColor.AQUA + " wins by default!");
-				l.log(Level.INFO, roundList.get(0).getName() + " offline, " + roundList.get(1).getName() + " wins");
-				roundList.remove(0);
-				roundList.remove(0);
-				participants.remove(0);
-				return;
-			}
-			if (!roundList.get(1).isOnline()) {
-				J2MC_Manager.getCore().getServer().broadcastMessage(ChatColor.RED + roundList.get(1).getName() + ChatColor.AQUA + " is offline.");
-				J2MC_Manager.getCore().getServer().broadcastMessage(ChatColor.RED + roundList.get(1).getName() + ChatColor.AQUA + " forfeits and " + ChatColor.RED + roundList.get(0).getName() + ChatColor.AQUA + " wins by default!");
-				l.log(Level.INFO, roundList.get(1).getName() + " offline, " + roundList.get(0).getName() + " wins");
-				roundList.remove(0);
-				roundList.remove(0);
-				participants.remove(1);
-				return;
-			}
-			J2MC_Manager.getCore().getServer().broadcastMessage(ChatColor.AQUA + "Now fighting: " + ChatColor.RED + roundList.get(0).getName() + ChatColor.AQUA + " and " + ChatColor.RED + roundList.get(1).getName());
-			//Both players are online, set status to fighting so the event handler will pay attention
-			status = GameStatus.Fighting;
-			//Give each player a proper inventory, heal them, teleport them to their positions
-			for (int x = 0; x < 2; x++) {
-				Player p = roundList.get(x);
-				PlayerInventory pInventory = p.getInventory();
-				pInventory.clear(); //Working
-				for (Integer i : itemList) {
-					if (i.equals(262) || i.equals(341) || i.equals(332))
-						pInventory.addItem(new ItemStack(i, 16));
-					else if (i.equals(298) || i.equals(302) || i.equals(306) || i.equals(310) || i.equals(314) || i.equals(86))
-						pInventory.setHelmet(new ItemStack(i));
-					else if (i.equals(299) || i.equals(303) || i.equals(307) || i.equals(311) || i.equals(315))
-						pInventory.setChestplate(new ItemStack(i));
-					else if (i.equals(300) || i.equals(304) || i.equals(308) || i.equals(312) || i.equals(316))
-						pInventory.setLeggings(new ItemStack(i));
-					else if (i.equals(301) || i.equals(305) || i.equals(309) || i.equals(313) || i.equals(317))
-						pInventory.setBoots(new ItemStack(i));
-					else
-						pInventory.addItem(new ItemStack(i));
-				}
-				p.setHealth(p.getMaxHealth()); //Working
-				p.setFoodLevel(7); //Working
-				if (x == 0) {
-					p.teleport(startPositionA);
-				} else {
-					p.teleport(startPositionB);
-				}
-			}
-		}
-	}
+    @EventHandler
+    public void onDisconnect(PlayerQuitEvent event) {
+        if (status == GameStatus.Fighting) { //If a fight isn't in progress, we don't care if anyone quits
+            if (event.getPlayer().getName().equals(roundList.get(0))) {
+                processKill(roundList.get(1), roundList.get(0), false);
+            } else if (event.getPlayer().getName().equals(roundList.get(1))) {
+                processKill(roundList.get(0), roundList.get(1), false);
+            }
+        }
+    }
+    
+    @EventHandler
+    public void onDeath(PlayerDeathEvent event) {
+        if (status == GameStatus.Fighting) { //If a fight isn't in progress, we don't care if anyone dies
+            if (event.getEntity().getName().equals(roundList.get(0))) {
+                processKill(roundList.get(1), roundList.get(0), true);
+                event.getDrops().clear();
+            } else if (event.getEntity().getName().equals(roundList.get(1))) {
+                processKill(roundList.get(0), roundList.get(1), true);
+                event.getDrops().clear();
+            }
+        }
+    }
+    
+    private void giveInventory(Player player) {
+        PlayerInventory pInventory = player.getInventory();
+        pInventory.clear();
+        for (Integer i : itemList) {
+            if (i.equals(262) || i.equals(341) || i.equals(332))
+                pInventory.addItem(new ItemStack(i, 16));
+            else if (i.equals(298) || i.equals(302) || i.equals(306) || i.equals(310) || i.equals(314) || i.equals(86))
+                pInventory.setHelmet(new ItemStack(i));
+            else if (i.equals(299) || i.equals(303) || i.equals(307) || i.equals(311) || i.equals(315))
+                pInventory.setChestplate(new ItemStack(i));
+            else if (i.equals(300) || i.equals(304) || i.equals(308) || i.equals(312) || i.equals(316))
+                pInventory.setLeggings(new ItemStack(i));
+            else if (i.equals(301) || i.equals(305) || i.equals(309) || i.equals(313) || i.equals(317))
+                pInventory.setBoots(new ItemStack(i));
+            else
+                pInventory.addItem(new ItemStack(i));
+        }
+        player.setHealth(player.getMaxHealth());
+        player.setFoodLevel(17); //max 20, 6 or below = no running, 18 or above = regenerate
+    }
+    
+    public void fight() {
+        if (roundList.size() >= 2) {
+            Logger l = J2MC_Manager.getCore().getLogger();
+            Player p1 = J2MC_Manager.getCore().getServer().getPlayerExact(roundList.get(0));
+            Player p2 = J2MC_Manager.getCore().getServer().getPlayerExact(roundList.get(1));
+            String p1name = roundList.get(0);
+            String p2name = roundList.get(1);
+            
+            //Check for absent players here
+            if (p1 == null || p2 == null) {
+                roundList.remove(p1name);
+                roundList.remove(p2name);
+            }
+            if (p1 == null && p2 == null) {
+                J2MC_Manager.getCore().getServer().broadcastMessage(ChatColor.AQUA + "Both " + ChatColor.RED + p1name + ChatColor.AQUA + " and " + ChatColor.RED + p2name + ChatColor.AQUA + " are offline.");
+                J2MC_Manager.getCore().getServer().broadcastMessage(ChatColor.AQUA + "Both players are removed from the tournament!");
+                l.log(Level.INFO, "both " + p1name + " and " + p2name + " were offline, both removed");
+                participants.remove(p1name);
+                participants.remove(p2name);
+                return;
+            }
+            if (p1 == null) {
+                J2MC_Manager.getCore().getServer().broadcastMessage(ChatColor.RED + p1name + ChatColor.AQUA + " is offline.");
+                J2MC_Manager.getCore().getServer().broadcastMessage(ChatColor.RED + p1name + ChatColor.AQUA + " forfeits and " + ChatColor.RED + p2name + ChatColor.AQUA + " wins by default!");
+                l.log(Level.INFO, p1name + " is offline, " + p2name + " wins");
+                participants.remove(p1name);
+                return;
+            }
+            if (p2 == null) {
+                J2MC_Manager.getCore().getServer().broadcastMessage(ChatColor.RED + p2name + ChatColor.AQUA + " is offline.");
+                J2MC_Manager.getCore().getServer().broadcastMessage(ChatColor.RED + p2name + ChatColor.AQUA + " forfeits and " + ChatColor.RED + p1name + ChatColor.AQUA + " wins by default!");
+                l.log(Level.INFO, p2name + " is offline, " + p1name + " wins");
+                participants.remove(p2name);
+                return;
+            }
+            J2MC_Manager.getCore().getServer().broadcastMessage(ChatColor.AQUA + "Now fighting: " + ChatColor.RED + p1name + ChatColor.AQUA + " and " + ChatColor.RED + p2name);
+            status = GameStatus.Fighting;
+            giveInventory(p1);
+            giveInventory(p2);
+            p1.teleport(startPositionA);
+            p2.teleport(startPositionB);
+        }
+    }
 }
