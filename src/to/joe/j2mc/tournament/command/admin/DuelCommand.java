@@ -22,7 +22,7 @@ public class DuelCommand extends MasterCommand {
     @Override
     public void exec(CommandSender sender, String commandName, String[] args, Player player, boolean isPlayer) {
         if (args.length < 1) {
-            sender.sendMessage(ChatColor.RED + "Valid commands: kick <player>, add <player>, formup, fight, registration <open/close>, reset, r, list");
+            sender.sendMessage(ChatColor.RED + "Valid commands: kick <player>, add <player>, formup, fight, registration <open/close>, reset, r, list, roundlist");
             return;
         }
         if (args[0].equalsIgnoreCase("kick")) {
@@ -108,7 +108,11 @@ public class DuelCommand extends MasterCommand {
             return;
         }
         if (args[0].equalsIgnoreCase("list")) {
-            sender.sendMessage(ChatColor.RED + this.plugin.participants.toString());
+            sender.sendMessage(ChatColor.RED + "Participants " + this.plugin.participants.toString());
+            return;
+        }
+        if (args[0].equalsIgnoreCase("roundlist")) {
+            sender.sendMessage(ChatColor.RED + "Roundlist " + this.plugin.roundList.toString());
             return;
         }
         sender.sendMessage(ChatColor.RED + "Invalid command. Type /duel for options");
