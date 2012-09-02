@@ -94,7 +94,7 @@ public class J2MC_Tournament extends JavaPlugin implements Listener {
         this.getCommand("leave").setExecutor(new LeaveCommand(this));
         this.getCommand("duel").setExecutor(new DuelCommand(this));
     }
-    
+
     public void processKill(String victor, String loser, boolean killed) {
         Player v = J2MC_Manager.getCore().getServer().getPlayer(victor);
         Player l = J2MC_Manager.getCore().getServer().getPlayer(loser);
@@ -123,7 +123,7 @@ public class J2MC_Tournament extends JavaPlugin implements Listener {
             }
         }
     }
-    
+
     @EventHandler
     public void onDeath(PlayerDeathEvent event) {
         if (status == GameStatus.Fighting) { //If a fight isn't in progress, we don't care if anyone dies
@@ -136,7 +136,7 @@ public class J2MC_Tournament extends JavaPlugin implements Listener {
             }
         }
     }
-    
+
     private void giveInventory(Player player) {
         PlayerInventory pInventory = player.getInventory();
         pInventory.clear();
@@ -157,7 +157,7 @@ public class J2MC_Tournament extends JavaPlugin implements Listener {
         player.setHealth(player.getMaxHealth());
         player.setFoodLevel(17); //max 20, 6 or below = no running, 18 or above = regenerate
     }
-    
+
     public void fight() {
         if (roundList.size() >= 2) {
             Logger l = J2MC_Manager.getCore().getLogger();
@@ -165,7 +165,7 @@ public class J2MC_Tournament extends JavaPlugin implements Listener {
             Player p2 = J2MC_Manager.getCore().getServer().getPlayerExact(roundList.get(1));
             String p1name = roundList.get(0);
             String p2name = roundList.get(1);
-            
+
             //Check for absent players here
             if (p1 == null || p2 == null) {
                 roundList.remove(p1name);
