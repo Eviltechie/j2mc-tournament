@@ -31,8 +31,8 @@ public class J2MC_Tournament extends JavaPlugin implements Listener {
     private Location startPositionA;
     private Location startPositionB;
     private Location respawnPosition;
-    public ArrayList<String> participants;
-    public ArrayList<String> roundList;
+    public ArrayList<String> participants = new ArrayList<String>();
+    public ArrayList<String> roundList = new ArrayList<String>();
     public boolean registrationOpen = false;
     public List<Integer> itemList;
     public GameStatus status = GameStatus.Idle;
