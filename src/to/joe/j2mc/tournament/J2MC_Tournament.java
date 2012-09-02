@@ -110,6 +110,8 @@ public class J2MC_Tournament extends JavaPlugin implements Listener {
         v.teleport(respawnPosition);
         status = GameStatus.Idle;
         participants.remove(l);
+        roundList.remove(l);
+        roundList.remove(v);
         J2MC_Manager.getCore().getServer().broadcastMessage(ChatColor.RED + victor + ChatColor.AQUA + " wins this duel!");
     }
 
